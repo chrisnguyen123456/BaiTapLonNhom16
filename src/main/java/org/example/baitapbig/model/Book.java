@@ -17,6 +17,7 @@ public class Book {
     private String title;
     @Column(length = 500)
     private String author;
+    private int stock;
     private double price;
     private String image;
     private String category;

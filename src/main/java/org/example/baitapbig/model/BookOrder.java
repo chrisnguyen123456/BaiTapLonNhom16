@@ -1,6 +1,5 @@
 package org.example.baitapbig.model;
 
-
 import java.util.Date;
 
 import jakarta.persistence.CascadeType;
@@ -46,4 +45,3 @@ public class BookOrder {
     private OrderAddress orderAddress;
 
 }
-
