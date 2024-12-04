@@ -35,14 +35,16 @@ public class UserController {
     @Autowired
     private CommonUtil commonUtil;
 
-
-
     @GetMapping("/")
     public String home() {
         return "user/home";
     }
+
     @GetMapping("/success")
-    public String success() {  return "user/success";  }
+    public String success() {
+        return "user/success";
+    }
+
     @ModelAttribute
     public void getUserDetails(Principal p, Model m) {
         if (p != null) {
@@ -100,21 +102,35 @@ public class UserController {
         List<Cart> carts = cartService.getCartsByUser(user.getId());
         m.addAttribute("carts", carts);
         m.addAttribute("user", user);
-        m.addAttribute("firstName", user.getName().split(" ")[0]);
-        m.addAttribute("lastName", user.getName().split(" ")[1]);
+
+        // Kiểm tra và xử lý tên
+        String[] nameParts = user.getName().split(" ");
+        if (nameParts.length > 1) {
+            m.addAttribute("firstName", nameParts[0]);
+            m.addAttribute("lastName", nameParts[nameParts.length - 1]); // Lấy họ là phần cuối cùng
+        } else {
+            m.addAttribute("firstName", nameParts[0]); // Tên đầy đủ
+            m.addAttribute("lastName", ""); // Không có họ
+        }
+
+        // Tính toán các giá trị liên quan đến carts
         if (carts.size() > 0) {
             Double totalOrderPrice = carts.get(carts.size() - 1).getTotalOrderPrice();
             m.addAttribute("totalOrderPrice", totalOrderPrice);
+
             Long summary = carts.stream().mapToLong(c -> c.getTotalPrice().longValue()).sum();
             m.addAttribute("summary", summary);
+
             Double totalOrder = totalOrderPrice + 5 + 10;
             m.addAttribute("totalOrder", totalOrder);
         }
+
         return "/user/order";
     }
 
     @PostMapping("/save-order")
-    public String saveOrder(@ModelAttribute OrderRequest request, Principal p, HttpServletRequest request1) throws MessagingException, UnsupportedEncodingException {
+    public String saveOrder(@ModelAttribute OrderRequest request, Principal p, HttpServletRequest request1)
+            throws MessagingException, UnsupportedEncodingException {
         // System.out.println(request);
         Account user = getLoggedInUserDetails(p);
         boolean or = orderService.saveOrder(user.getId(), request);
@@ -122,7 +138,7 @@ public class UserController {
         double totalOrderPrice = 15;
         if (or) {
             List<BookOrder> order = orderService.getAllOrder(user.getId());
-            for(BookOrder o: order) {
+            for (BookOrder o : order) {
                 totalOrderPrice += o.getPrice();
             }
             String url = CommonUtil.generateUrl(request1) + "/bill/" + user.getId();
